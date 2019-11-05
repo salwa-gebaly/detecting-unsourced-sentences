@@ -96,7 +96,7 @@ discardElements = set([
         'table', 'tr', 'td', 'th', 'caption',
         'form', 'input', 'select', 'option', 'textarea',
         'ul', 'li', 'ol', 'dl', 'dt', 'dd', 'menu', 'dir',
-        'ref', 'references', 'img', 'imagemap', 'source'
+         'references', 'img', 'imagemap', 'source'
         ])
 
 #=========================================================================
@@ -138,7 +138,7 @@ def WikiDocumentSentences(out, id, title, tags, text):
     text = clean(text)
 
     out.reserve(len(header) + len(text))
-    print(header, file=out)
+    print(header[:-1]+'.(section)', file=out)
     for line in compact(text, structure=False):
         print(line, file=out)
 
@@ -320,8 +320,12 @@ def dropNested(text, openDelim, closeDelim):
     # collect text outside partitions
     res = ''
     start = 0
+    cite = ''
+     
+    if openRE.match('{{') and closeRE.match('}}') :
+      cite='(citation)'
     for s, e in  matches:
-        res += text[start:s]
+        res += text[start:s]+cite
         start = e
     res += text[start:]
     return res
@@ -477,7 +481,7 @@ def compact(text, structure=False):
                 page.append("<h%d>%s</h%d>" % (lev, title, lev))
             if title and title[-1] not in '!?':
                 title += '.'
-            headers[lev] = title
+            headers[lev] = title+'(section)'
             # drop previous headers
             for i in list(headers.keys()):
                 if i > lev:
