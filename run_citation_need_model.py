@@ -4,6 +4,7 @@ import pandas as pd
 import pickle
 import numpy as np
 import types
+import os
 
 from keras.models import load_model
 from keras.preprocessing.sequence import pad_sequences
@@ -125,13 +126,13 @@ def construct_instance_reasons(statement_path, section_dict_path, vocab_w2v_path
             section = row['section'].strip().lower()
             sections.append(np.array([section_dict[section] if section in section_dict else 0]))
 
-            label = row['citations']
+            '''label = row['citations']
 
             # some of the rows are corrupt, thus, we need to check if the labels are actually boolean.
             if type(label) != types.BooleanType:
                 continue
 
-            y.append(label)
+            y.append(label)'''
             X.append(X_inst)
             outstring.append(str(row["statement"]))
             #entity_id  revision_id timestamp   entity_title    section_id  section prg_idx sentence_idx    statement   citations
@@ -142,8 +143,8 @@ def construct_instance_reasons(statement_path, section_dict_path, vocab_w2v_path
     X = pad_sequences(X, maxlen=max_len, value=vocab_w2v['UNK'], padding='pre')
 
     encoder = LabelBinarizer()
-    y = encoder.fit_transform(y)
-    y = to_categorical(y)
+    '''y = encoder.fit_transform(y)
+    y = to_categorical(y)'''
 
     return X, np.array(sections), y, encoder, outstring
 
@@ -166,8 +167,11 @@ if __name__ == '__main__':
     # store the predictions: printing out the sentence text, the prediction score, and original citation label.
     outstr = 'Text\tPrediction\tCitation\n'
     for idx, y_pred in enumerate(pred):
-        outstr += outstring[idx]+'\t'+str(y_pred[0])+ '\t' + str(y[idx]) + '\n'
+        #outstr += outstring[idx]+'\t'+str(y_pred[0])+ '\t' + str(y[idx]) + '\n'
+        outstr += outstring[idx]+'\t'+str(y_pred[1])+ '\n'
 
+    if not os.path.exists(p.out_dir):
+        os.makedirs(p.out_dir)
     fout = open(p.out_dir + '/' + p.lang + '_predictions_sections.tsv', 'wt')
     fout.write(outstr)
     fout.flush()
